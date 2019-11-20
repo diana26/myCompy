@@ -1,0 +1,6 @@
+var a, bc1;
+input a; input bc1;
+a = a + bc1;
+if a > 52 then
+     output a
+.
