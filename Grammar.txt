@@ -1,0 +1,165 @@
+___________________________
+
+Productions (GRAMMAR)
+___________________________
+    <program> ::= <statements> .
+
+    <statements> ::= <statements> ; <statement>
+    <statements> ::= <statement>
+
+    --------- Context sensitive 'var' statement -----------
+    <statement> ::= <var-statement> // Only applies when there is NO ',' on input
+    -------------------------------------------------------
+    <statement> ::= { <statements> }
+    <statement> ::= <assign-stat>
+    <statement> ::= <if-stat>
+    <statement> ::= <while-stat>
+    <statement> ::= <input-stat>
+    <statement> ::= <output-stat>
+
+    <var-statement> ::= <var-statement> , <ident>
+    <var-statement> ::= var <ident>
+
+    <assign-stat> ::= <ident> = <expr>
+
+    <expr> ::= ( <expr> )
+    <expr> ::= <expr> <arith-op> <value>
+    <expr> ::= <arith-op> <value>
+    <expr> ::= <value>
+
+    <arith-op> ::= +
+    <arith-op> ::= -
+
+    <value> ::= <ident>
+    <value> ::= <const>
+
+    --------- Context sensitive 'if' statement -----------
+    <if-stat> ::= <if-then>         // Only applies when there is NO 'else' on input
+    ------------------------------------------------------
+    <if-stat> ::= <if-then-else>
+
+    <if-then> ::= <if-part> then <statement>
+
+    <if-then-else> ::= <if-then> else <statement>
+
+    <if-part> ::= if <log-expr>
+
+    <log-expr> ::= <expr> <log-op> <expr>
+
+    <log-op> ::= <
+    <log-op> ::= >
+    <log-op> ::= ==
+
+    <while-stat> ::= <while-part> <do-expr>
+
+    <while-part> ::= while <log-expr>
+
+    <do-expr> ::= do <statement>
+
+    <input-stat> ::= input <ident>
+
+    <output-stat> ::= output <expr>
+
+___________________________
+
+Lexical alphabet (TOKENS)
+___________________________
+    Characters:
+        . ; , { } = ( ) + - < > ==
+    Reserved words:
+        var if then else while do input output
+    Symbols (other than reserved words):
+        <ident> ::= One letter followed by letters and decimal digits (0-9)
+        <const> ::= One to three decimal digits (0-9)
+
+    Source text separators (not part of alphabet):
+        blank-space  new-line  tab
+
+___________________________
+
+Stack alphabet (VARIABLES)
+___________________________
+    Reducing Symbols:
+        <statement> <var-satement> <assign-stat> <expr> <value> <if-stat> <while-stat> <input-stat>
+        <output-stat> <if-then-else> <log-expr>
+        <if-then>   //--- Only reduces when there is NO 'else' on input
+    Non-Reducing Symbols:
+        <program> <var-statements> <statements> <if-part> <arith-op> <log-op>
+        <if-then>   //--- Does not reduce when next token on input is 'else'
+    Characters (Non-Reducing):
+        { ; , = ( + -
+    Reserved words (Non-Reducing):
+        var if then else input output while do
+___________________________
+
+Reversed Productions
+___________________________
+
+    Reducing Symbol     Top of stack            Reduction
+    (TOS / input)                               (next TOS)
+    ________________    ____________            _________
+
+    .                   <statements>            => <program>
+
+    <statement>         ;                       => <statements>
+                        <statements>
+    <statement>         then                    => <if-then>
+                        <if-part>
+    <statement>         else                    => <if-then-else>
+                        <if-then>
+    <statement>         do                      => <do-expr>
+    <statement>                                 => <statements>
+
+    }                   <statements>            => <statement>
+                        {
+
+    --------- Context sensitive 'var' statement -----------
+    <var-statement>                             => <statement>  // Only applies when there is NO ',' on input
+    -------------------------------------------------------
+    <assign-stat>                               => <statement>
+    <if-stat>                                   => <statement>
+    <while-stat>                                => <statement>
+    <input-stat>                                => <statement>
+    <output-stat>                               => <statement>
+
+    <ident>             ,                       => <var-statement>
+                        <var-statement>
+    <ident>             var                     => <var-statement>
+    <ident>             input                   => <input-stat>
+    <ident>                                     => <value>
+
+    <expr>              =                       => <assign-stat>
+                        <ident>
+    <expr>              <log-op>                => <log-expr>
+                        <expr>
+    <expr>              output                  => <output-stat>
+
+    <log-expr>          if                      => <if-part>
+    <log-expr>          while                   => <while-part>
+
+    )                   <expr>                  => <expr>
+                        (
+
+    <value>             <arith-op>              => <expr>
+                        <expr>
+    <value>             <arith-op>              => <expr>
+    <value>                                     => <expr>
+
+    +                                           => <arith-op>
+    -                                           => <arith-op>
+
+    <const>                                     => <value>
+
+    --------- Context sensitive 'if' statement -----------
+    <if-then>                                   => <if-stat>    // Only applies when there is NO 'else' on input
+    ------------------------------------------------------
+
+    <if-then-else>                              => <if-stat>
+
+    <log-expr>          if                      => <if-part>
+
+    <                                           => <log-op>
+    >                                           => <log-op>
+    ==                                          => <log-op>
+
+    <do-expr>           <while-part>            => <while-stat>
